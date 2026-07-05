@@ -1,0 +1,132 @@
+{
+  "sistema": "FINANCE CORE",
+  "programa": "BHCPH001",
+  "totalizadores": {
+    "clientesLidos": 20,
+    "transacoesLidas": 40,
+    "transacoesValidas": 18,
+    "transacoesRejeitadas": 22
+  },
+  "clientes": [
+    {
+      "codigo": "00001",
+      "nome": "JOAO SILVA",
+      "saldoFinal": "00000175000",
+      "status": "A"
+    },
+    {
+      "codigo": "00002",
+      "nome": "MARIA SOUZA",
+      "saldoFinal": "00000117550",
+      "status": "A"
+    },
+    {
+      "codigo": "00003",
+      "nome": "CARLOS LIMA",
+      "saldoFinal": "00000003000",
+      "status": "A"
+    },
+    {
+      "codigo": "00004",
+      "nome": "ANA PEREIRA",
+      "saldoFinal": "00000270000",
+      "status": "A"
+    },
+    {
+      "codigo": "00005",
+      "nome": "PAULO SANTOS",
+      "saldoFinal": "00000001500",
+      "status": "A"
+    },
+    {
+      "codigo": "00006",
+      "nome": "FERNANDA COSTA",
+      "saldoFinal": "00000022000",
+      "status": "A"
+    },
+    {
+      "codigo": "00007",
+      "nome": "RICARDO ALMEIDA",
+      "saldoFinal": "00000070000",
+      "status": "A"
+    },
+    {
+      "codigo": "00008",
+      "nome": "JULIANA ROCHA",
+      "saldoFinal": "00000072500",
+      "status": "A"
+    },
+    {
+      "codigo": "00009",
+      "nome": "MARCOS OLIVEIRA",
+      "saldoFinal": "00000005000",
+      "status": "A"
+    },
+    {
+      "codigo": "00010",
+      "nome": "PATRICIA GOMES",
+      "saldoFinal": "00000160000",
+      "status": "A"
+    },
+    {
+      "codigo": "00011",
+      "nome": "LUCAS MARTINS",
+      "saldoFinal": "00000050000",
+      "status": "A"
+    },
+    {
+      "codigo": "00012",
+      "nome": "CAMILA RIBEIRO",
+      "saldoFinal": "00000098500",
+      "status": "A"
+    },
+    {
+      "codigo": "00013",
+      "nome": "ROBERTO BARBOSA",
+      "saldoFinal": "00000001000",
+      "status": "A"
+    },
+    {
+      "codigo": "00014",
+      "nome": "BEATRIZ MENDES",
+      "saldoFinal": "00000175000",
+      "status": "A"
+    },
+    {
+      "codigo": "00015",
+      "nome": "GUSTAVO NUNES",
+      "saldoFinal": "00000002500",
+      "status": "A"
+    },
+    {
+      "codigo": "00016",
+      "nome": "HELENA DIAS",
+      "saldoFinal": "00000007000",
+      "status": "I"
+    },
+    {
+      "codigo": "00017",
+      "nome": "RAFAEL FREITAS",
+      "saldoFinal": "00000110000",
+      "status": "I"
+    },
+    {
+      "codigo": "00018",
+      "nome": "LARISSA CAMPOS",
+      "saldoFinal": "00000055000",
+      "status": "I"
+    },
+    {
+      "codigo": "00019",
+      "nome": "EDUARDO MOREIRA",
+      "saldoFinal": "00000200000",
+      "status": "B"
+    },
+    {
+      "codigo": "00020",
+      "nome": "TATIANE AZEVEDO",
+      "saldoFinal": "00000033000",
+      "status": "B"
+    }
+  ]
+}
