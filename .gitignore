@@ -1,0 +1,9 @@
+# Executáveis compilados
+BHCPH000
+BHCPH001
+
+# Arquivos de objeto intermediários
+*.o
+
+# Logs transient da esteira de testes
+test_sysout.log
