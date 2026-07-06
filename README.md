@@ -6,6 +6,12 @@ Backend financeiro corporativo batch desenvolvido em **COBOL** durante o **Bootc
 
 ---
 
+## Repositório de Exercícios
+
+### Os exercicios COBOL feitos nas etapas anteriores podem ser encontrados no link abaixo:
+
+- https://github.com/Felipe-Brandim/Hackathon-Cobol
+
 ## 🛠️ O Desafio
 
 O objetivo principal consiste em ler uma massa de dados de clientes e transações diárias, carregar os cadastros em tabelas indexadas na memória RAM (`OCCURS`), processar cada transação por meio de um subprograma especialista em regras de negócio, atualizar saldos, registrar logs de erro e exportar os dados consolidados em um formato de integração moderna (JSON manual).
@@ -36,17 +42,88 @@ O ecossistema é composto pelos seguintes componentes obrigatórios:
 
 ---
 
+## 🧪 Automação & Testes (CI/CD)
+
+Como diferencial técnico e garantia de estabilidade frente a futuras alterações no motor do core financeiro, o projeto conta com uma **Esteira de Testes Automatizada via Shell Script (`run_tests.sh`)** baseada na metodologia _Golden Master Testing_.
+
+O script encarrega-se de:
+
+1. Limpar de forma idempotente o espaço de trabalho.
+2. Compilar os fontes suprimindo avisos estéticos não-críticos de quebra de linha do editor (`-Wno-others`).
+3. Orquestrar a execução sequencial do gerador e do core.
+4. Realizar asserções automatizadas com base no resultado esperado pelo processamento matemático rigoroso da massa oficial de entrada.
+
+> 💡 **Nota de Engenharia sobre a Massa Oficial:**
+> O documento de especificação do Hackathon apresenta um JSON de exemplo puramente visual/conceitual com o placar de 25/15. No entanto, o processamento real, estrito e exato das 40 transações diárias oficiais fornecidas sobre as regras de negócio bancárias resulta em **18 transações válidas** e **22 transações rejeitadas** por insuficiência de fundos, bloqueios cadastrais ou status inativos. A suíte de testes valida e garante a precisão deste comportamento numérico real centavo por centavo.
+
+---
+
 ## 🚀 Como Executar o Sistema
 
-### 1. Gerar a Massa de Dados Oficial
+Escolha uma das duas abordagens abaixo para homologar e rodar o ecossistema batch em seu ambiente Linux/Ubuntu:
 
-```bash
-cobc -x -o BHCPH000 BHCPH000.cbl
-./BHCPH000
-```
+### Abordagem A: Execução Totalmente Automatizada (Recomendado)
 
-## Repositório de Exercícios
+Esta rota limpa o ambiente, compila todos os módulos com as flags de otimização necessárias e executa as asserções de negócio exibindo um relatório colorido no terminal.
 
-### Os exercicios COBOL feitos nas etapas anteriores podems ser encontrados no link abaixo:
+1. **Conceda permissão de execução ao script de teste:**
+   ```bash
+   chmod +x run_tests.sh
+   ```
+2. **Depois veja a saída com o comando**
+   ```bash
+   ./run_tests.sh
+   ```
 
-- https://github.com/Felipe-Brandim/Hackathon-Cobol
+### Abordagem B: Execução Manual Passo a Passo
+
+Caso prefira executar o ecossistema batch manualmente e acompanhar a geração dos arquivos em cada etapa, siga os passos abaixo.
+
+#### Passo 1: Geração da Massa de Dados
+
+1. Compile o programa gerador:
+
+   ```bash
+   cobc -x -Wno-others -o BHCPH000 BHCPH000.cbl
+   ```
+
+2. Execute o gerador para criar os arquivos de entrada:
+
+   ```bash
+   ./BHCPH000
+   ```
+
+3. Verifique se os seguintes arquivos foram criados:
+   - **BHCFHCLI.txt** — Deve conter **20 registros** de clientes.
+   - **BHCFHTRA.txt** — Deve conter **40 registros** de transações.
+
+---
+
+#### Passo 2: Processamento do Core Financeiro
+
+1. Compile o programa principal juntamente com o subprograma de regras de negócio:
+
+   ```bash
+   cobc -x -Wno-others -o BHCPH001 BHCPH001.cbl BHCSH001.cbl
+   ```
+
+2. Execute o processamento:
+
+   ```bash
+   ./BHCPH001
+   ```
+
+---
+
+#### Passo 3: Auditoria dos Resultados
+
+Ao final da execução, confirme a geração dos seguintes arquivos:
+
+- **BHCFHEXT.txt**
+  - Contém as **18 movimentações financeiras válidas**, incluindo os saldos atualizados.
+
+- **BHCFHLOG.txt**
+  - Contém as **22 transações rejeitadas**, acompanhadas de seus respectivos códigos e mensagens de erro.
+
+- **BHCFHJSN.json**
+  - Contém os metadados da execução, os totalizadores do processamento e o saldo final consolidado de todos os clientes.
