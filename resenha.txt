@@ -1,0 +1,115 @@
+================================================================================
+* SIGLA.....: BHC - BOOTCAMP HACKATHON COBOL
+* COMPONENTE: RESENHA TÉCNICA E MEMORIAL DESCRITIVO DE ARQUITETURA
+* SISTEMA...: FINANCE CORE (PROCESSAMENTO BATCH DE CONTAS CORRENTES)
+* AUTOR.....: FELIPE FERNANDES BRANDIM
+* DATA......: 05/07/2026
+* REPOSITÓRIO: https://github.com/Felipe-Brandim/Hackathon-Cobol-Desafio-Final
+================================================================================
+
+1. INTRODUÇÃO E PROPÓSITO
+--------------------------------------------------------------------------------
+Este documento constitui a resenha técnica de engenharia do sistema Finance Core,
+desenvolvido como desafio final do Hackathon COBOL. O objetivo deste memorial é
+registrar o processo evolutivo de tomada de decisão, as discussões técnicas e a
+aplicação de princípios modernos de Engenharia de Software (universais por
+natureza) sobre a arquitetura de processamento batch estruturado em COBOL.
+
+
+2. A EVOLUÇÃO DO RACIOCÍNIO E DESIGN ARQUITETURAL
+--------------------------------------------------------------------------------
+A construção do software não seguiu uma abordagem monolítica rudimentar, mas sim
+um fluxo focado em modularidade, separação de conceitos (Separation of Concerns)
+e alto reaproveitamento de código:
+
+* FASE 1: Isolamento de Contratos de Dados (Copybooks)
+  Antes de programar qualquer lógica, isolamos os layouts físicos dos registros
+  gerados (Clientes e Transações) e de saída (Extrato e Log de Rejeições) em 
+  arquivos ".cpy". Essa decisão atuou como o estabelecimento de contratos de 
+  interface (semelhantes a structs ou interfaces de APIs modernas), mitigando 
+  erros de desalinhamento de bytes na memória local e centralizando futuras 
+  manutenções estruturais em um único ponto.
+
+* FASE 2: Desacoplamento de Regras de Negócio (Subprograma)
+  A lógica de validação financeira foi completamente segregada do programa de
+  orquestração I/O e alocada no subprograma "BHCSH001". Para viabilizar a
+  comunicação via "LINKAGE SECTION", optou-se pelo desenvolvimento de uma área
+  de parâmetros dedicada ("BHCPARAM.cpy"), funcionando como uma Commarea de
+  mainframe corporativo. Isso garante o princípio de acoplamento fraco (loose
+  coupling), permitindo que o motor de regras seja consumido por qualquer outro
+  maestro batch futuramente.
+
+* FASE 3: O Maestro e Proteção de Estado (Programa Principal)
+  O programa principal "BHCPH001" carrega os registros cadastrais estáticos em
+  uma tabela indexada em memória RAM via matriz ("OCCURS 100 TIMES"). Durante o
+  desenvolvimento do algoritmo de busca sequencial, um bug crítico de mutação
+  de estado foi detectado e corrigido: o loop estava sobrescrevendo a variável
+  global de controle de leitura ("WS-TOT-CLI-LIDOS"). A correção envolveu a 
+  implementação de uma flag de saída precoce ("UNTIL ... OR ACHOU = 'S'"),
+  blindando a integridade dos totalizadores globais.
+
+
+3. PRINCIPAIS DISCUSSÕES TÉCNICAS E RESOLUÇÃO DE IMPASSES
+--------------------------------------------------------------------------------
+O processo de desenvolvimento enfrentou atritos clássicos entre restrições de
+especificações legadas e os critérios rígidos de ferramentas modernas de análise
+estática de código (linters). As principais discussões e resoluções foram:
+
+* Impasse 1: "Unreachable Code" (Análise Estática do VS Code vs Template Fixo)
+  O IBM Z Open Editor (linter do VS Code) acusava código morto ("Unreachable 
+  code") no parágrafo obrigatório de encerramento ("000000-FIM. EXIT.") devido 
+  à presença de um comando de parada incondicional ("GOBACK") no fluxo 
+  sequencial do parágrafo anterior.
+  -> Solução Aplicada: Empregou-se um padrão de arquitetura de sistemas legados
+     tornando o encerramento condicional através de uma avaliação lógica de
+     status ativo ("IF WS-FS-OK = '00' THEN GOBACK"). Isso removeu o alerta de
+     código morto na árvore sintática do editor, satisfazendo tanto o rigor do 
+     linter quanto o template estético do desafio.
+
+* Impasse 2: Rigor Lógico do GnuCOBOL (Cláusulas Level 88)
+  Houve uma falha de compilação ao tentar forçar um "SET ... TO FALSE" em campos
+  condicionais que não possuíam uma cláusula explícita de falsidade declarada.
+  -> Solução Aplicada: Substituiu-se a instrução por atribuições literais e
+     diretas ("MOVE 'N' TO VARIABLE"), o que simplificou o gerenciamento de
+     memória transient e obedeceu às diretivas nativas do compilador.
+
+* Impasse 3: O Paradoxo do Exemplo Conceitual (Massa de Dados vs PDF)
+  Um dos problemas mais demorados ocorreu ao constatar que o relatório de
+  saída de totalizadores exibido na especificação textual do desafio indicava
+  25 transações válidas e 15 rejeitadas, enquanto a compilação real da massa 
+  fornecida retornava categoricamente 18 válidas e 22 rejeitadas.
+  -> Defesa Técnica Estabelecida: O diagrama contido na documentação era um 
+     "Mockup/Exemplo Conceitual" de design de interface JSON. A execução
+     matemática exata e estrita das regras de negócio sobre as 40 transações 
+     reais fornecidas resulta impreterivelmente em 22 rejeições (provocadas por
+     estouro de limite de saldo de clientes específicos, contas inativas, 
+     bloqueadas ou códigos operacionais inválidos). O core do sistema manteve-se
+     fiel à integridade matemática dos dados bancários.
+
+
+4. FILOSOFIA DE DESENVOLVIMENTO AGIL E DEVOPS (CI/CD)
+--------------------------------------------------------------------------------
+Para elevar o projeto aos patamares contemporâneos de desenvolvimento, projetou-se
+uma suíte de testes automatizados encapsulada em Shell Script ("run_tests.sh"). 
+A rotina aplica o conceito de "Golden Master Testing", realizando etapas
+automáticas de:
+
+1. Purga e limpeza de resíduos de compilações anteriores;
+2. Compilação otimizada dos fontes com supressão de warnings estéticos de 
+   alinhamento de quebra de linha de editores modernos ("-Wno-others");
+3. Execução acoplada do gerador de massa ("BHCPH000") e do orquestrador;
+4. Asserções lógicas automatizadas via REGEX (inspecionando se os valores cravam 
+   em 18 válidas, 22 rejeitadas e se a estrutura estrutural do JSON está íntegra).
+
+
+5. CONCLUSÃO
+--------------------------------------------------------------------------------
+O resultado final do Finance Core prova que linguagens tradicionais como COBOL 
+podem (e devem) ser escritas sob as melhores diretrizes da engenharia moderna; mas também mostra 
+que há muito o que soluções modernas podem fazer para continuar dando vida a sistemas e
+mantendo ecossistemas COBOL. Fiquei bastante impressionado com o quão bem pensada foi 
+essa linguagem em sua época, o que explica muito bem o sucesso do COBOL até os dias de hoje,
+confesso que pensei se tratar de uma linguagem bem mais engessada e com poucos recursos
+quando comecei a estudá-la, mas me surpreendi positivamente ao construir sistemas com ela.
+
+================================================================================
