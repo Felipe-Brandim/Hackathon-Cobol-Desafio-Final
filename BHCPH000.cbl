@@ -9,7 +9,7 @@
       * ----------------------------------------------------------------
       * VRS DATA     RESPONSAVEL     DESCRICAO DA VERSAO
       * --- -------- --------------- ----------------------------------
-      * 001 05.07.26 FELIPE BRANDIM  IMPLANTACAO COM INDENTACAO CORRETA
+      * 002 05.07.26 FELIPE BRANDIM  INCLUSAO DE DATA E HORA DINAMICA
       ******************************************************************
  
       ******************************************************************
@@ -47,18 +47,18 @@
        FD  FD-ARQ-CLI
            RECORDING MODE IS F
            RECORD CONTAINS 58 CHARACTERS.
-       01 BHCFHCLI-REG       PIC X(058).
+       01 BHCFHCLI-REG          PIC X(058).
 
        FD  FD-ARQ-TRA
            RECORDING MODE IS F
            RECORD CONTAINS 31 CHARACTERS.
-       01 BHCFHTRA-REG       PIC X(031).
+       01 BHCFHTRA-REG          PIC X(031).
  
       *----------------------------------------
        WORKING-STORAGE                 SECTION.
       *----------------------------------------
        01 WS-CONSTANTES.
-          05 WS-FS-OK        PIC X(002) VALUE '00'.
+          05 WS-FS-OK           PIC X(002) VALUE '00'.
 
       *----------------------------------------
        LOCAL-STORAGE                   SECTION.
@@ -67,17 +67,28 @@
            COPY BHCTRAXX.
 
        01 WS-FILE-STATUS.
-          05 FS-CLI          PIC X(002) VALUE SPACES.
-          05 FS-TRA          PIC X(002) VALUE SPACES.
+          05 FS-CLI             PIC X(002) VALUE SPACES.
+          05 FS-TRA             PIC X(002) VALUE SPACES.
 
        01 GDA-CONTROLES.
-          05 IDX             PIC 9(002) VALUE ZEROS.
+          05 IDX                PIC 9(002) VALUE ZEROS.
 
        01 WS-TOTALIZADORES.
-          05 WS-TOT-CLI-GRV  PIC 9(005) VALUE ZEROS.
-          05 WS-TOT-TRA-GRV  PIC 9(005) VALUE ZEROS.
+          05 WS-TOT-CLI-GRV     PIC 9(005) VALUE ZEROS.
+          05 WS-TOT-TRA-GRV     PIC 9(005) VALUE ZEROS.
+
+      * Estrutura de desempacotamento de data e hora do sistema
+       01 WS-DATA-HORA-SISTEMA.
+          05 WS-DT-ANO          PIC X(004).
+          05 WS-DT-MES          PIC X(002).
+          05 WS-DT-DIA          PIC X(002).
+          05 WS-HR-HORA         PIC X(002).
+          05 WS-HR-MIN          PIC X(002).
+          05 WS-HR-SEG          PIC X(002).
+          05 FILLER             PIC X(009).
+       01 WS-HEADER-DATA-HORA   PIC X(023) VALUE SPACES.
  
-******************************************************************
+      ******************************************************************
        PROCEDURE DIVISION.
       ******************************************************************
       *-----------------------------------------------------------------
@@ -91,7 +102,6 @@
            PERFORM 900000-FECHAR-ARQUIVOS
            PERFORM 910000-EXIBIR-TOTALIZADORES
            
-      *    FIX: GOBACK condicional para limpar o "Unreachable Code"
            IF WS-FS-OK = '00' THEN
               GOBACK
            END-IF
@@ -105,10 +115,32 @@
        100000-PROC.
            MOVE ZEROS TO WS-TOT-CLI-GRV
                          WS-TOT-TRA-GRV
-           DISPLAY '**************************************************'
+           
+      *    Montagem dinamica do timestamp para o cabecalho obrigatorio
+           MOVE FUNCTION CURRENT-DATE TO WS-DATA-HORA-SISTEMA
+           STRING WS-DT-DIA DELIMITED BY SIZE
+                  '/' DELIMITED BY SIZE
+                  WS-DT-MES DELIMITED BY SIZE
+                  '/' DELIMITED BY SIZE
+                  WS-DT-ANO DELIMITED BY SIZE
+                  ' - ' DELIMITED BY SIZE
+                  WS-HR-HORA DELIMITED BY SIZE
+                  ':' DELIMITED BY SIZE
+                  WS-HR-MIN DELIMITED BY SIZE
+                  ':' DELIMITED BY SIZE
+                  WS-HR-SEG DELIMITED BY SIZE
+              INTO WS-HEADER-DATA-HORA
+
+      *    Impressao do Cabecalho Regulamentar na SYSOUT
+           DISPLAY '***************************************************'
+           DISPLAY '* SIGLA.....: BHC - BOOTCAMP HACKATHON COBOL'
            DISPLAY '* PROGRAMA..: BHCPH000'
+           DISPLAY '* ANALISTA..: HILARIO'
+           DISPLAY '* AUTOR.....: FELIPE FERNANDES BRANDIM'
+           DISPLAY '* DATA/HORA.: ' WS-HEADER-DATA-HORA
            DISPLAY '* OBJETIVO..: GERADOR DE MASSA FINANCE CORE'
-           DISPLAY '**************************************************'
+           DISPLAY '* EXECUCAO..: COBOL BATCH'
+           DISPLAY '***************************************************'
            .
        100000-FIM.
            EXIT.
